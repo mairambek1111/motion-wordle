@@ -9,6 +9,7 @@ body {
     margin-top: 70px;
     width: 500px;
     height: 530px;
+    border-radius: 10px;
     padding: 24px;
     background: rgb(255, 255, 255);
     &__card {
@@ -25,6 +26,7 @@ body {
       border: 2px solid rgb(194, 195, 199);
       border-radius: 4px;
       outline: none;
+      border-radius: 10px;
       list-style: none;
       text-align: center;
       font-size: 50px;
@@ -35,4 +37,8 @@ body {
       );
     }
   }
+}
+
+.matched {
+  background: green;
 }
