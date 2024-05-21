@@ -3,69 +3,82 @@ import "./card.scss";
 import axios from "axios";
 
 function Card() {
-  const [data, setdata] = useState<string>("");
+  const [data, setData] = useState<string[]>([""]);
 
   const inputsRef = useRef<HTMLInputElement[] | any>([]);
 
-  const [answer, setAnswer] = useState<string[]>(
-    Array.from({ length: 25 }, () => "")
-  );
-  const [answers, setAnswers] = useState<boolean[]>(
-    Array.from({ length: 25 }, () => false)
-  );
+  const [answer, setAnswer] = useState<string[]>(Array(25).fill(""));
+
+  const [enter, setEnter] = useState<boolean>(false);
 
   useEffect(() => {
     axios.get("https://piccolo-server.vercel.app/words").then((res) => {
       const words = res.data.data;
-      console.log(words);
-      const ranodomIndex = Math.floor(Math.random() * words.length);
-      console.log(ranodomIndex);
-      const selectWords = words[ranodomIndex];
-      setdata(selectWords);
+      const randomIndex = Math.floor(Math.random() * words.length);
+      const selectedWord = words[randomIndex];
+      const paddedWord = selectedWord.padEnd(5);
+      setData(paddedWord.split(""));
     });
   }, []);
 
-  console.log(data);
-
-  // window.addEventListener("keydown", function (e: KeyboardEvent) {
-  //   if (e.key === "Backspace") {
-  //     setAnswer(answer.slice(0, -1));
-  //   }
-  // });
-
-  function HandleInputChange(index: number, e: any) {
+  function handleInputChange(index: number, e: any) {
     const { value } = e.target;
-    const newINput = [...answer];
-    newINput[index] = value.toUpperCase();
-    setAnswer(newINput);
-
-    if (value.toUpperCase() === data.charAt(index).toUpperCase()) {
-      const newMatched = [...answers];
-
-      newMatched[index] = true;
-
-      setAnswers(newMatched);
-    } else {
-      const newMatched = [...answers];
-      newMatched[index] = false;
-      setAnswers(newMatched);
-    }
+    const newInputValue = [...answer];
+    newInputValue[index] = value.toUpperCase();
+    setAnswer(newInputValue);
     if (value.length === 1 && index < inputsRef.current.length - 1) {
       inputsRef.current[index + 1].focus();
     }
   }
 
-  const inputs = Array.from({ length: 25 }, (_, index) => (
-    <input
-      ref={(input) => (inputsRef.current[index] = input)}
-      key={index}
-      className={`cards__content__box ${answers[index] ? "matched" : ""}`}
-      type="text"
-      maxLength={1}
-      value={answer[index] || ""}
-      onChange={(e) => HandleInputChange(index, e)}
-    />
-  ));
+  function handleKeyDown(
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) {
+    if (e.key === "Enter") {
+      const isMatch = data.every((char, i) => char === answer[i]);
+      if (isMatch) {
+        alert("Поздравляем вы угадали слово!!!");
+        window.location.reload();
+      }
+      setEnter(true);
+    } else {
+      setEnter(false);
+    }
+    if (e.key === "Backspace" && index > 0 && answer[index] === "") {
+      const newAnswer = [...answer];
+      newAnswer[index - 1] = "";
+      setAnswer(newAnswer);
+      inputsRef.current[index - 1].focus();
+    }
+  }
+
+  const inputs = Array.from({ length: 25 }, (_, index) => {
+    const adjustedIndex = index % 5;
+    return (
+      <input
+        ref={(input) => (inputsRef.current[index] = input)}
+        key={index}
+        className="cards__content__box"
+        type="text"
+        maxLength={1}
+        value={answer[index]}
+        onChange={(e) => handleInputChange(index, e)}
+        onKeyDown={(e) => handleKeyDown(index, e)}
+        style={{
+          background: enter
+            ? data[adjustedIndex] && answer[index] === data[adjustedIndex]
+              ? "#15C285"
+              : data.includes(answer[index]) && answer[index] !== ""
+              ? "#FBBF54"
+              : "#C2C3C7"
+            : "#C2C3C7",
+        }}
+      />
+    );
+  });
+
+  console.log(data);
 
   return (
     <>
@@ -73,7 +86,6 @@ function Card() {
         <div className="container">
           <div className="cards__content">
             <div className="cards__content__card">{inputs}</div>
-            <button>Click</button>
           </div>
         </div>
       </section>
