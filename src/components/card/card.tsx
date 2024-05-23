@@ -7,7 +7,7 @@ function Card() {
 
   const inputsRef = useRef<HTMLInputElement[] | any>([]);
 
-  const [answer, setAnswer] = useState<string[]>(Array(25).fill(""));
+  const [answer, setAnswer] = useState<string[]>(Array(5).fill(""));
 
   const [enter, setEnter] = useState<boolean>(false);
 
@@ -36,10 +36,16 @@ function Card() {
     e: React.KeyboardEvent<HTMLInputElement>
   ) {
     if (e.key === "Enter") {
-      const isMatch = data.every((char, i) => char === answer[i]);
+      const start = index - (index % 5);
+
+      const end = start + 5;
+      const word = answer.slice(start, end).join("");
+      const isMatch = word === data.slice(start, end).join("");
       if (isMatch) {
         alert("Поздравляем вы угадали слово!!!");
         window.location.reload();
+      } else {
+        alert("Попробуйте еще раз");
       }
       setEnter(true);
     } else {
